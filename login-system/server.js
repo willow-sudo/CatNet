@@ -26,14 +26,7 @@ db.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`, (err) => {
   }
 });
 
-db.run(`
-CREATE TABLE IF NOT EXISTS posts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT,
-  content TEXT,
-  author TEXT
-)
-`);
+
 
 /* ---------------- DEFAULT ADMIN ---------------- */
 
@@ -142,15 +135,11 @@ app.post("/login", (req, res) => {
 /* ---------------- CREATE POST ---------------- */
 
 app.post("/create-post", (req, res) => {
-  const { title, content, author } = req.body;
-
-  if (!title || !content || !author) {
-    return res.json({ success: false });
-  }
+  const { title, content, author, image } = req.body;
 
   db.run(
-    "INSERT INTO posts (title,content,author) VALUES (?,?,?)",
-    [title, content, author],
+    "INSERT INTO posts (title, content, author, image) VALUES (?,?,?,?)",
+    [title, content, author, image],
     function (err) {
       if (err) {
         console.error(err);
@@ -158,7 +147,7 @@ app.post("/create-post", (req, res) => {
       }
 
       res.json({ success: true });
-    }
+    },
   );
 });
 
@@ -213,6 +202,25 @@ app.delete("/delete-post/:id", (req, res) => {
       });
     });
   });
+});
+
+
+
+/* ---------------- DATABASE ---------------- */
+
+db.run(`
+CREATE TABLE IF NOT EXISTS posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  content TEXT,
+  author TEXT
+)
+`);
+
+db.run(`ALTER TABLE posts ADD COLUMN image TEXT`, (err) => {
+  if (err && !err.message.includes("duplicate column name")) {
+    console.log(err.message);
+  }
 });
 
 /* ---------------- START SERVER ---------------- */

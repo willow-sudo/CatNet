@@ -76,7 +76,9 @@ html, body {
   border-radius: 2px;
 }
 
-
+#post-image {
+  margin: 10px 0;
+}
 
 .side-menu.active {
   right: 0;

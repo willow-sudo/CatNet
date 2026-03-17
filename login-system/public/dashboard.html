@@ -20,43 +20,50 @@
       <button onclick="openPostModal()">+ Create Post</button>
       <button onclick="logout()">Logout</button>
       
-    
+      
       <div></div>
       <div></div>
     </div>
   </div>
-
+  
   <!-- ===== SIDE MENU ===== -->
+  
+</div>
 
-  </div>
+<!-- ===== OVERLAY ===== -->
+<div class="menu-overlay" id="menuOverlay"></div>
 
-  <!-- ===== OVERLAY ===== -->
-  <div class="menu-overlay" id="menuOverlay"></div>
-
-  <!-- ===== DASHBOARD ===== -->
+<!-- ===== DASHBOARD ===== -->
   <div class="dashboard">
     <h2 id="dashboard-welcome"></h2>
-
+    
     <!-- Posts container -->
     <div id="posts-container"></div>
   </div>
-
+  
   <!-- ===== POST MODAL ===== -->
-  <div class="modal" id="post-modal">
-    <div class="modal-content">
-      <input type="text" id="post-title" placeholder="Post title" />
-      <textarea
-        id="post-content"
-        rows="3"
-        placeholder="Write your post..."
-      ></textarea>
+ <div class="modal" id="post-modal">
+  <div class="modal-content">
+    
+    <input type="text" id="post-title" placeholder="Post title" />
+    
+    <textarea
+      id="post-content"
+      rows="3"
+      placeholder="Write your post..."
+    ></textarea>
 
-      <button onclick="submitPost()">Submit Post</button>
-      <button onclick="closePostModal()" style="background: #360503">
-        Cancel
-      </button>
-    </div>
+    <!-- FILE INPUT GOES HERE -->
+    <input type="file" id="post-image" accept="image/*" />
+
+    <button onclick="submitPost()">Submit Post</button>
+
+    <button onclick="closePostModal()" style="background: #360503">
+      Cancel
+    </button>
+
   </div>
+</div>
 
 </body>
 </html>
