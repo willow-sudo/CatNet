@@ -10,6 +10,23 @@ document.getElementById("dashboard-welcome").textContent =
 
 document.getElementById("menu-welcome").textContent = username;
 
+/* -------- SCROLL ZOOM -------- */
+
+function enableScrollZoom(img) {
+  let size = img.clientWidth || 200;
+
+  img.style.maxWidth = size + "px";
+
+  img.addEventListener("wheel", (e) => {
+    e.preventDefault();
+
+    size += e.deltaY * -0.2;
+    size = Math.max(100, Math.min(800, size));
+
+    img.style.maxWidth = size + "px";
+  });
+}
+
 /* -------- LOGOUT -------- */
 
 function logout() {
@@ -39,11 +56,11 @@ async function loadPosts() {
 
     let imageHTML = "";
     if (post.image) {
-      imageHTML = `<img src="${post.image}" style="max-width: 200px; display:block; margin-top:10px;">`;
+      imageHTML = `<img src="${post.image}" class="post-image">`;
     }
 
     div.innerHTML = `
-    <small>Posted by <b>${post.author}</b></small>
+      <small>Posted by <b>${post.author}</b></small>
       <h3>${post.title}</h3>
       <p>${post.content}</p>
       ${imageHTML}
@@ -51,6 +68,12 @@ async function loadPosts() {
     `;
 
     container.appendChild(div);
+
+    // ✅ ENABLE ZOOM HERE (FIXED)
+    const img = div.querySelector(".post-image");
+    if (img) {
+      enableScrollZoom(img);
+    }
   });
 }
 
@@ -72,7 +95,7 @@ async function submitPost() {
     imageBase64 = await toBase64(file);
   }
 
-  console.log("IMAGE:", imageBase64); // debug
+  console.log("IMAGE:", imageBase64);
 
   await fetch("/create-post", {
     method: "POST",
@@ -83,7 +106,7 @@ async function submitPost() {
       title,
       content,
       author: username,
-      image: imageBase64, // 
+      image: imageBase64,
     }),
   });
 
@@ -94,6 +117,8 @@ async function submitPost() {
   closePostModal();
   loadPosts();
 }
+
+/* -------- BASE64 -------- */
 
 function toBase64(file) {
   return new Promise((resolve, reject) => {

@@ -59,25 +59,17 @@ html, body {
   background-color: aqua;
 }
 
-/* Burger Menu */
-.burger {
-  width: 28px;
-  height: 22px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-}
 
-.burger div {
-  height: 3px;
-  width: 100%;
-  background: #d7dadc;
-  border-radius: 2px;
-}
 
 #post-image {
   margin: 10px 0;
+}
+
+
+.post-image {
+  max-width: 200px;
+  cursor: zoom-in;
+  transition: 0.2s;
 }
 
 .side-menu.active {
