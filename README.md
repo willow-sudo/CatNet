@@ -30,6 +30,7 @@ Option B (Git):
 git clone https://github.com/willow-sudo/websitemeow1.git
 cd websitemeow1
 
+---
 
 3. Install dependencies
 npm install
