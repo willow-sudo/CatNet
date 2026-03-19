@@ -27,8 +27,8 @@ Extract it
 
 Option B (Git):
 
-git clone https://github.com/willow-sudo/websitemeow1.git
-cd websitemeow1
+git clone https://github.com/willow-sudo/CatNet.git
+cd CatNet
 
 ---
 
