@@ -5,62 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./main.css">
   <script src="./dashboard.js" defer></script>
-  <title>Dashboard</title>
+  <title>CatNet</title>
 </head>
 <body>
 
-  <!-- ===== NAVBAR ===== -->
-  <div class="navbar">
-    <div class="side-menu" id="sideMenu">
-      
-      <div class="menu-header">
-        <span id="menu-welcome">Not logged in</span>
-      </div>
-  
-      <button onclick="openPostModal()">+ Create Post</button>
-      <button onclick="logout()">Logout</button>
-      
-      
-      <div></div>
-      <div></div>
-    </div>
+
+
+ <!-- NAVBAR -->
+<div class="navbar">
+  <div class="site-name"><span>Cat</span>Net</div>
+  <div class="navbar-buttons">
+    <button id="create-post-btn">+ Create Post</button>
+    <button onclick="logout()">Logout</button>
   </div>
-  
-  <!-- ===== SIDE MENU ===== -->
-  
 </div>
 
-<!-- ===== OVERLAY ===== -->
-<div class="menu-overlay" id="menuOverlay"></div>
+<!-- DASHBOARD -->
+<div class="dashboard">
+  <h2 id="dashboard-welcome"></h2>
+  <div id="posts-container"></div>
+</div>
 
-<!-- ===== DASHBOARD ===== -->
-  <div class="dashboard">
-    <h2 id="dashboard-welcome"></h2>
-    
-    <!-- Posts container -->
-    <div id="posts-container"></div>
-  </div>
-  
-  <!-- ===== POST MODAL ===== -->
- <div class="modal" id="post-modal">
+<!-- POST MODAL -->
+<div class="modal" id="post-modal">
   <div class="modal-content">
-    
     <input type="text" id="post-title" placeholder="Post title" />
-    
-    <textarea
-      id="post-content"
-      rows="3"
-      placeholder="Write your post..."
-    ></textarea>
-
-    <!-- FILE INPUT GOES HERE -->
+    <textarea id="post-content" rows="3" placeholder="Write your post..."></textarea>
     <input type="file" id="post-image" accept="image/*" />
-
-    <button onclick="submitPost()">Submit Post</button>
-
-    <button onclick="closePostModal()" style="background: #360503">
-      Cancel
-    </button>
+    <button id="submit-post-btn">Submit Post</button>
+    <button id="cancel-post-btn" style="background: #360503">Cancel</button>
+  </div>
+</div>
 
   </div>
 </div>

@@ -6,151 +6,96 @@
   src: url(./fonts/OpenDyslexic-Regular.otf);
 }
 
+/* ======= Reset ======= */
 *,
 *::before,
 *::after {
-  box-sizing: border-box; /* prevent padding/margin overflow */
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* ======= Base Layout ======= */
 html, body {
   width: 100%;
   height: 100%;
-  overflow-x: hidden; /* remove horizontal scroll completely */
+  overflow-x: hidden;
   font-family: "OpenDyslexic", system-ui, sans-serif;
-  background: linear-gradient(135deg, #000000, #5e0303);
-  color: #d7dadc;
-  line-height: 1.4;
+  background: linear-gradient(180deg, #1a0000, #2b0000);
+  color: #eee;
+  line-height: 1.5;
 }
 
 /* ======= Navbar ======= */
 .navbar {
   width: 100%;
-  background: #1a1a1b;
+  background: #1a1a1a; /* soft dark */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  height: 60px;
-  border-bottom: 1px solid #2a2a2c;
+  padding: 12px 25px;
   position: sticky;
   top: 0;
   z-index: 100;
-}
-
-.navbar button {
-  background: #760303;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 20px;
-  padding: 8px 16px;
-  border: none;
-  transition: background 0.2s ease;
+  border-bottom: 1px solid #2a2a2a; /* subtle divider */
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 /* Logo */
-.logo {
-  background: url("./img/web-programming.png") no-repeat center;
-  width: 40px;
-  height: 40px;
-  background-size: contain;
-  background-color: aqua;
-}
-
-
-
-#post-image {
-  margin: 10px 0;
-}
-
-
-.post-image {
-  max-width: 200px;
-  cursor: zoom-in;
-  transition: 0.2s;
-}
-
-.side-menu.active {
-  right: 0;
-}
-
-/* Overlay */
-.menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  display: none;
-  z-index: 1000;
-}
-
-.menu-overlay.active {
-  display: block;
-}
-
-/* ======= Login / Signup Card ======= */
-.card {
-  background: #1a1a1b;
-  padding: 30px;
-  border-radius: 12px;
-  width: 320px;
-  border: 1px solid #2a2a2c;
-  text-align: center;
-  margin: 100px auto;
-  box-shadow: 0 0 30px #000;
-}
-
-.card h2 {
-  margin-bottom: 20px;
-}
-
-.card input, .card textarea {
-  width: 100%;
-  margin: 10px 0;
-  padding: 10px;
+.navbar .logo {
+  width: 45px;
+  height: 45px;
   border-radius: 6px;
-  border: 1px solid #2a2a2c;
-  background: #0f0f10;
-  color: #d7dadc;
+  background-color: #2a2a2a;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.15s ease;
 }
 
-.card input:focus, .card textarea:focus {
-  outline: none;
-  border: 1px solid #760303;
+.navbar .logo:hover {
+  transform: scale(1.03);
 }
 
-.card input::placeholder,
-.card textarea::placeholder {
-  color: #666;
+/* CatNet */
+.navbar .site-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #e0e0e0; /* soft light text */
+  letter-spacing: 1px;
+  font-family: 'OpenDyslexic', system-ui, sans-serif;
+  transition: color 0.2s ease;
 }
 
-.card button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 20px;
-  border: none;
-  background: #760303;
-  color: white;
+.navbar .site-name span {
+  color: #ff6f61; /* subtle accent for “Cat” */
+  font-weight: 700;
+}
+
+.navbar .site-name:hover {
+  color: #fff;
+}
+
+/* Buttons */
+.navbar button {
+  background: #2a2a2a;
+  color: #ddd;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
   cursor: pointer;
-  transition: background 0.2s ease;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.15s;
 }
 
-.card button:hover {
-  background: #a50404;
+.navbar button:hover {
+  background: #3a3a3a;
+  transform: translateY(-1px);
 }
 
-#msg {
-  margin-top: 10px;
-  min-height: 18px;
-  color: #d7dadc;
-}
+
 
 /* ======= Dashboard ======= */
 .dashboard {
@@ -163,102 +108,173 @@ html, body {
   gap: 16px;
 }
 
-/* Posts */
 #posts-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 16px;
 }
 
-/* Post Card */
+/* ======= Post Card ======= */
 .post-card {
-  background: #1a1a1b;
-  border: 1px solid #2a2a2c;
-  border-radius: 8px;
-  padding: 14px 16px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 15px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: border 0.2s ease;
+  transition: transform 0.2s, border 0.2s;
 }
 
 .post-card:hover {
-  border: 1px solid #3a3a3c;
+  transform: scale(1.01);
+  border: 1px solid rgba(255, 0, 0, 0.4);
 }
 
 .post-card h3 {
-  margin: 0;
+  margin: 5px 0;
   font-size: 17px;
-  color: #d7dadc;
+  color: #eee;
 }
 
 .post-card p {
-  margin: 0;
+  margin: 5px 0 10px;
   font-size: 14px;
-  color: #b9bbbe;
+  color: #ccc;
   line-height: 1.6;
   white-space: pre-wrap;
 }
 
 .post-card small {
+  color: #aaa;
   font-size: 12px;
-  color: #818384;
 }
 
-/* Modal */
-.modal {
-  display: none;
+.post-card b {
+  color: #fff;
+}
+
+/* ======= Post Image ======= */
+.post-image {
+  max-width: 30%;
+  border-radius: 10px;
+  margin-top: 10px;
+  cursor: zoom-in;
+  transition: 0.2s;
+}
+
+.post-image:hover {
+  transform: scale(1.02);
+}
+
+/* ======= Cards / Forms ======= */
+.card, .modal-content {
+  background: #1a1a1b;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+  max-width: 90%;
+  border: 1px solid #2a2a2c;
+  text-align: center;
+  margin: 100px auto;
+  box-shadow: 0 0 30px #000;
+}
+
+.card input, .card textarea,
+.modal-content input, .modal-content textarea {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #2a2a2c;
+  background: #0f0f10;
+  color: #eee;
+}
+
+.card input:focus, .card textarea:focus,
+.modal-content input:focus, .modal-content textarea:focus {
+  outline: none;
+  border: 1px solid #ff3b3b;
+}
+
+.card button, .modal-content button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  background: #ff3b3b;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.card button:hover, .modal-content button:hover {
+  background: #ff5c5c;
+}
+
+/* ======= Overlay ======= */
+.menu-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  justify-content: center;
-  align-items: center;
-  overflow-y: auto; /* vertical scroll only if needed */
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(3px);
+  display: none;
   z-index: 1000;
 }
 
+.menu-overlay.active {
+  display: block;
+}
+
+/* ======= Modal ======= */
+/* Modal background + centering */
+.modal {
+  display: none; /* hidden by default */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* above everything */
+}
+
+/* Modal box */
 .modal-content {
   background: #1a1a1b;
-  padding: 20px;
-  border-radius: 8px;
-  width: 450px;
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
   max-width: 90%;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid #2a2a2c;
+  z-index: 2100; /* above overlay */
+  position: relative;
 }
 
+/* Inputs & buttons */
 .modal-content input,
 .modal-content textarea {
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #2a2a2c;
   background: #0f0f10;
-  color: #d7dadc;
-}
-
-.modal-content input:focus,
-.modal-content textarea:focus {
-  outline: none;
-  border: 1px solid #760303;
+  color: #eee;
 }
 
 .modal-content button {
-  background: #760303;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 20px;
   padding: 10px;
+  border-radius: 20px;
   border: none;
-  transition: background 0.2s ease;
-}
-
-.modal-content button:hover {
-  background: #a50404;
+  cursor: pointer;
 }

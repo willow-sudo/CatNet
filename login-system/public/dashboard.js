@@ -1,45 +1,53 @@
 const username = localStorage.getItem("username");
 const role = localStorage.getItem("role")?.toLowerCase().trim();
 
-if (!username) {
-  window.location.href = "./index.html";
-}
+if (!username) window.location.href = "./index.html";
 
 document.getElementById("dashboard-welcome").textContent =
   `Welcome, ${username}!`;
 
-document.getElementById("menu-welcome").textContent = username;
+const modal = document.getElementById("post-modal");
 
-/* -------- SCROLL ZOOM -------- */
+document.getElementById("create-post-btn").addEventListener("click", () => {
+  modal.style.display = "flex";
+});
 
-function enableScrollZoom(img) {
-  let size = img.clientWidth || 200;
+document.getElementById("cancel-post-btn").addEventListener("click", () => {
+  modal.style.display = "none";
+});
 
-  img.style.maxWidth = size + "px";
+// ======= Create Post Button =======
+document.getElementById("create-post-btn").addEventListener("click", () => {
+  modal.style.display = "flex";
+});
 
-  img.addEventListener("wheel", (e) => {
-    e.preventDefault();
+document.getElementById("cancel-post-btn").addEventListener("click", () => {
+  modal.style.display = "none";
+});
 
-    size += e.deltaY * -0.2;
-    size = Math.max(100, Math.min(800, size));
-
-    img.style.maxWidth = size + "px";
-  });
-}
-
-/* -------- LOGOUT -------- */
-
+// ======= Logout =======
 function logout() {
   localStorage.clear();
   window.location.href = "./index.html";
 }
 
-/* -------- LOAD POSTS -------- */
+// ======= Scroll Zoom =======
+function enableScrollZoom(img) {
+  let size = img.clientWidth || 200;
+  img.style.maxWidth = size + "px";
 
+  img.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    size += e.deltaY * -0.2;
+    size = Math.max(100, Math.min(800, size));
+    img.style.maxWidth = size + "px";
+  });
+}
+
+// ======= Load Posts =======
 async function loadPosts() {
   const res = await fetch("/posts");
   const data = await res.json();
-
   if (!data.success) return;
 
   const container = document.getElementById("posts-container");
@@ -69,57 +77,44 @@ async function loadPosts() {
 
     container.appendChild(div);
 
-    // ✅ ENABLE ZOOM HERE (FIXED)
     const img = div.querySelector(".post-image");
-    if (img) {
-      enableScrollZoom(img);
-    }
+    if (img) enableScrollZoom(img);
   });
 }
 
-/* -------- CREATE POST -------- */
+// ======= Submit Post =======
+document
+  .getElementById("submit-post-btn")
+  .addEventListener("click", async () => {
+    const title = document.getElementById("post-title").value;
+    const content = document.getElementById("post-content").value;
+    const file = document.getElementById("post-image").files[0];
 
-async function submitPost() {
-  const title = document.getElementById("post-title").value;
-  const content = document.getElementById("post-content").value;
-  const file = document.getElementById("post-image").files[0];
+    if (!title || !content) return alert("Write something");
 
-  if (!title || !content) {
-    alert("Write something");
-    return;
-  }
+    let imageBase64 = "";
+    if (file) imageBase64 = await toBase64(file);
 
-  let imageBase64 = "";
+    await fetch("/create-post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        content,
+        author: username,
+        image: imageBase64,
+      }),
+    });
 
-  if (file) {
-    imageBase64 = await toBase64(file);
-  }
+    document.getElementById("post-title").value = "";
+    document.getElementById("post-content").value = "";
+    document.getElementById("post-image").value = "";
 
-  console.log("IMAGE:", imageBase64);
-
-  await fetch("/create-post", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      title,
-      content,
-      author: username,
-      image: imageBase64,
-    }),
+    modal.style.display = "none";
+    loadPosts();
   });
 
-  document.getElementById("post-title").value = "";
-  document.getElementById("post-content").value = "";
-  document.getElementById("post-image").value = "";
-
-  closePostModal();
-  loadPosts();
-}
-
-/* -------- BASE64 -------- */
-
+// ======= Convert File to Base64 =======
 function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -129,39 +124,17 @@ function toBase64(file) {
   });
 }
 
-/* -------- DELETE -------- */
-
+// ======= Delete Post =======
 async function deletePost(id) {
   const res = await fetch(`/delete-post/${id}`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username }),
   });
-
   const data = await res.json();
-
-  if (!data.success) {
-    alert("Not authorized");
-    return;
-  }
-
+  if (!data.success) return alert("Not authorized");
   loadPosts();
 }
 
-/* -------- MODAL -------- */
-
-const modal = document.getElementById("post-modal");
-
-function openPostModal() {
-  modal.style.display = "flex";
-}
-
-function closePostModal() {
-  modal.style.display = "none";
-}
-
-/* -------- INIT -------- */
-
+// ======= INIT =======
 loadPosts();
