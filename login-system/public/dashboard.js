@@ -1,12 +1,12 @@
+// ===== USER INFO =====
 const username = localStorage.getItem("username");
 const role = localStorage.getItem("role")?.toLowerCase().trim();
-
 if (!username) window.location.href = "./index.html";
 
 document.getElementById("dashboard-welcome").textContent =
   `Welcome, ${username}!`;
-  
 
+// ===== MODAL =====
 const modal = document.getElementById("post-modal");
 
 document.getElementById("create-post-btn").addEventListener("click", () => {
@@ -17,22 +17,13 @@ document.getElementById("cancel-post-btn").addEventListener("click", () => {
   modal.style.display = "none";
 });
 
-// ======= Create Post Button =======
-document.getElementById("create-post-btn").addEventListener("click", () => {
-  modal.style.display = "flex";
-});
-
-document.getElementById("cancel-post-btn").addEventListener("click", () => {
-  modal.style.display = "none";
-});
-
-// ======= Logout =======
-function logout() {
+// ===== LOGOUT =====
+document.getElementById("logout-btn").addEventListener("click", () => {
   localStorage.clear();
   window.location.href = "./index.html";
-}
+});
 
-// ======= Scroll Zoom =======
+// ===== SCROLL ZOOM =====
 function enableScrollZoom(img) {
   let size = img.clientWidth || 200;
   img.style.maxWidth = size + "px";
@@ -45,7 +36,11 @@ function enableScrollZoom(img) {
   });
 }
 
-// ======= Load Posts =======
+// ===== ANTI-SPAM TRACKERS =====
+const likeCooldown = {};
+const commentCooldown = {};
+
+// ===== LOAD POSTS =====
 async function loadPosts() {
   const res = await fetch("/posts");
   const data = await res.json();
@@ -63,27 +58,41 @@ async function loadPosts() {
       deleteBtn = `<button onclick="deletePost(${post.id})">Delete</button>`;
     }
 
-    let imageHTML = "";
-    if (post.image) {
-      imageHTML = `<img src="${post.image}" class="post-image">`;
-    }
+    let imageHTML = post.image
+      ? `<img src="${post.image}" class="post-image">`
+      : "";
+
+    // Comment form
+    const commentSection = `
+      <div class="comment-section">
+        <form class="comment-form" data-post-id="${post.id}">
+          <input type="text" class="comment-input" placeholder="Write a comment..." required />
+          <button type="submit">Comment</button>
+        </form>
+        <div class="comments-list" id="comments-${post.id}"></div>
+      </div>
+    `;
 
     div.innerHTML = `
       <small>Posted by <b>${post.author}</b></small>
       <h3>${post.title}</h3>
       <p>${post.content}</p>
       ${imageHTML}
+      <button onclick="likePost(${post.id})">❤ ${post.likes || 0}</button>
       ${deleteBtn}
+      ${commentSection}
     `;
 
     container.appendChild(div);
 
     const img = div.querySelector(".post-image");
     if (img) enableScrollZoom(img);
+
+    loadComments(post.id);
   });
 }
 
-// ======= Submit Post =======
+// ===== SUBMIT POST =====
 document
   .getElementById("submit-post-btn")
   .addEventListener("click", async () => {
@@ -115,7 +124,86 @@ document
     loadPosts();
   });
 
-// ======= Convert File to Base64 =======
+// ===== LIKE POST =====
+async function likePost(postId) {
+  const key = `${username}-${postId}`;
+  const now = Date.now();
+  if (likeCooldown[key] && now - likeCooldown[key] < 5000000000000000000000000000000000000000000000000000)
+    return alert("Wait before liking again!");
+  likeCooldown[key] = now;
+
+  const res = await fetch(`/like-post/${postId}`, { method: "POST" });
+  const data = await res.json();
+  if (!data.success) return alert("Failed to like post");
+
+  loadPosts();
+}
+
+// ===== COMMENT HANDLING =====
+document.addEventListener("submit", async (e) => {
+  if (!e.target.classList.contains("comment-form")) return;
+  e.preventDefault();
+
+  const form = e.target;
+  const postId = form.dataset.postId;
+  const input = form.querySelector(".comment-input");
+  const commentText = input.value.trim();
+  if (!commentText) return;
+
+  const key = `${username}-${postId}`;
+  const now = Date.now();
+  if (commentCooldown[key] && now - commentCooldown[key] < 10000)
+    return alert("Wait a few seconds before commenting again!");
+  commentCooldown[key] = now;
+
+  const submitBtn = form.querySelector("button");
+  submitBtn.disabled = true;
+
+  const res = await fetch(`/comment-post/${postId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, comment: commentText }),
+  });
+  const data = await res.json();
+  if (!data.success) alert("Failed to post comment");
+
+  input.value = "";
+  submitBtn.disabled = false;
+
+  loadComments(postId);
+});
+
+// ===== LOAD COMMENTS =====
+async function loadComments(postId) {
+  const res = await fetch(`/get-comments/${postId}`);
+  const data = await res.json();
+  if (!data.success) return;
+
+  const container = document.getElementById(`comments-${postId}`);
+  container.innerHTML = "";
+
+  data.comments.forEach((c) => {
+    const div = document.createElement("div");
+    div.className = "comment";
+    div.innerHTML = `<b>${c.username}:</b> ${c.text}`;
+    container.appendChild(div);
+  });
+}
+
+// ===== DELETE POST =====
+async function deletePost(id) {
+  const res = await fetch(`/delete-post/${id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+  });
+  const data = await res.json();
+  if (!data.success) return alert("Not authorized");
+
+  loadPosts();
+}
+
+// ===== BASE64 HELPER =====
 function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -125,17 +213,5 @@ function toBase64(file) {
   });
 }
 
-// ======= Delete Post =======
-async function deletePost(id) {
-  const res = await fetch(`/delete-post/${id}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username }),
-  });
-  const data = await res.json();
-  if (!data.success) return alert("Not authorized");
-  loadPosts();
-}
-
-// ======= INIT =======
+// ===== INIT =====
 loadPosts();

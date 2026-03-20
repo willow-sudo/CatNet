@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
@@ -10,6 +11,7 @@ app.use(express.static("public"));
 
 /* ---------------- DATABASE ---------------- */
 
+// Users table
 db.run(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,17 +21,30 @@ CREATE TABLE IF NOT EXISTS users (
 )
 `);
 
-// Add role column to existing tables if it doesn't exist
-db.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`, (err) => {
-  if (err && !err.message.includes('duplicate column name')) {
-    console.log('Role column already exists or error:', err.message);
-  }
-});
+// Posts table
+db.run(`
+CREATE TABLE IF NOT EXISTS posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  content TEXT,
+  author TEXT,
+  image TEXT,
+  likes INTEGER DEFAULT 0
+)
+`);
 
-
+// Comments table
+db.run(`
+CREATE TABLE IF NOT EXISTS comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id INTEGER,
+  username TEXT,
+  text TEXT,
+  FOREIGN KEY(post_id) REFERENCES posts(id)
+)
+`);
 
 /* ---------------- DEFAULT ADMIN ---------------- */
-
 const defaultAdmin = {
   username: "Nullchan",
   password: "4@H_7d4''1",
@@ -40,66 +55,41 @@ db.get(
   "SELECT * FROM users WHERE username=?",
   [defaultAdmin.username],
   async (err, user) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
+    if (err) return console.error(err);
 
     if (!user) {
       const hash = await bcrypt.hash(defaultAdmin.password, 10);
-
-      db.run(
-        "INSERT INTO users (username,password,role) VALUES (?,?,?)",
-        [defaultAdmin.username, hash, defaultAdmin.role],
-        (err) => {
-          if (err) console.error(err);
-          else console.log("Default admin created: Nullchan");
-        }
-      );
+      db.run("INSERT INTO users (username,password,role) VALUES (?,?,?)", [
+        defaultAdmin.username,
+        hash,
+        defaultAdmin.role,
+      ]);
+      console.log("Default admin created");
     } else {
-      // Force admin role if user already exists
-      db.run(
-        "UPDATE users SET role='admin' WHERE username=?",
-        [defaultAdmin.username],
-        (err) => {
-          if (err) console.error(err);
-        }
-      );
+      db.run("UPDATE users SET role='admin' WHERE username=?", [
+        defaultAdmin.username,
+      ]);
     }
-  }
+  },
 );
 
 /* ---------------- SIGNUP ---------------- */
-
 app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) return res.json({ success: false });
 
-  if (!username || !password) {
-    return res.json({ success: false, error: "Missing fields" });
-  }
-
-  try {
-    const hash = await bcrypt.hash(password, 10);
-
-    db.run(
-      "INSERT INTO users (username,password) VALUES (?,?)",
-      [username, hash],
-      (err) => {
-        if (err) {
-          return res.json({ success: false, error: "User exists" });
-        }
-
-        res.json({ success: true });
-      }
-    );
-  } catch (err) {
-    console.error(err);
-    res.json({ success: false });
-  }
+  const hash = await bcrypt.hash(password, 10);
+  db.run(
+    "INSERT INTO users (username,password) VALUES (?,?)",
+    [username, hash],
+    (err) => {
+      if (err) return res.json({ success: false });
+      res.json({ success: true });
+    },
+  );
 });
 
 /* ---------------- LOGIN ---------------- */
-
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -107,124 +97,106 @@ app.post("/login", (req, res) => {
     "SELECT * FROM users WHERE username=?",
     [username],
     async (err, user) => {
-      if (err) {
-        console.error(err);
-        return res.json({ success: false });
-      }
-
-      if (!user) {
-        return res.json({ success: false, error: "User not found" });
-      }
+      if (err || !user) return res.json({ success: false });
 
       const match = await bcrypt.compare(password, user.password);
+      if (!match) return res.json({ success: false });
 
-      if (!match) {
-        return res.json({ success: false, error: "Wrong password" });
-      }
-
-      // send username + role to frontend
-      res.json({
-        success: true,
-        username: user.username,
-        role: user.role,
-      });
-    }
+      res.json({ success: true, username: user.username, role: user.role });
+    },
   );
 });
 
 /* ---------------- CREATE POST ---------------- */
-
 app.post("/create-post", (req, res) => {
   const { title, content, author, image } = req.body;
+  if (!title || !content || !author) return res.json({ success: false });
 
   db.run(
     "INSERT INTO posts (title, content, author, image) VALUES (?,?,?,?)",
-    [title, content, author, image],
-    function (err) {
-      if (err) {
-        console.error(err);
-        return res.json({ success: false });
-      }
+    [title, content, author, image || null],
+    (err) => {
+      if (err) return res.json({ success: false });
+      res.json({ success: true });
+    },
+  );
+});
 
+/* ---------------- LIKE POST ---------------- */
+app.post("/like-post/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.run(
+    "UPDATE posts SET likes = COALESCE(likes,0) + 1 WHERE id = ?",
+    [id],
+    function (err) {
+      if (err) return res.json({ success: false });
       res.json({ success: true });
     },
   );
 });
 
 /* ---------------- GET POSTS ---------------- */
-
 app.get("/posts", (req, res) => {
   db.all("SELECT * FROM posts ORDER BY id DESC", [], (err, rows) => {
-    if (err) {
-      console.error(err);
-      return res.json({ success: false });
-    }
-
-    res.json({
-      success: true,
-      posts: rows,
-    });
+    if (err) return res.json({ success: false });
+    res.json({ success: true, posts: rows });
   });
 });
 
-/* ---------------- DELETE POST ---------------- */
+/* ---------------- CREATE COMMENT ---------------- */
+app.post("/comment-post/:postId", (req, res) => {
+  const postId = req.params.postId;
+  const { username, comment } = req.body;
+  if (!username || !comment) return res.json({ success: false });
 
+  db.run(
+    "INSERT INTO comments (post_id, username, text) VALUES (?,?,?)",
+    [postId, username, comment],
+    (err) => {
+      if (err) return res.json({ success: false });
+      res.json({ success: true });
+    },
+  );
+});
+
+/* ---------------- GET COMMENTS ---------------- */
+app.get("/get-comments/:postId", (req, res) => {
+  const postId = req.params.postId;
+  db.all(
+    "SELECT username, text FROM comments WHERE post_id=? ORDER BY id ASC",
+    [postId],
+    (err, rows) => {
+      if (err) return res.json({ success: false });
+      res.json({ success: true, comments: rows });
+    },
+  );
+});
+
+/* ---------------- DELETE POST ---------------- */
 app.delete("/delete-post/:id", (req, res) => {
   const id = req.params.id;
   const { username } = req.body;
 
-  if (!username) {
-    return res.json({ success: false });
-  }
-
   db.get("SELECT role FROM users WHERE username=?", [username], (err, user) => {
-    if (err || !user) {
-      return res.json({ success: false });
-    }
+    if (err || !user) return res.json({ success: false });
 
     db.get("SELECT author FROM posts WHERE id=?", [id], (err, post) => {
-      if (err || !post) {
+      if (err || !post) return res.json({ success: false });
+
+      if (user.role !== "admin" && post.author !== username) {
         return res.json({ success: false });
       }
 
-      // allow admin OR author
-      if (user.role !== "admin" && post.author !== username) {
-        return res.json({ success: false, error: "Not authorized" });
-      }
-
-      db.run("DELETE FROM posts WHERE id=?", [id], function (err) {
-        if (err) {
-          console.error(err);
-          return res.json({ success: false });
-        }
-
+      db.run("DELETE FROM posts WHERE id=?", [id], (err) => {
+        if (err) return res.json({ success: false });
         res.json({ success: true });
       });
     });
   });
 });
 
-
-
-/* ---------------- DATABASE ---------------- */
-
-db.run(`
-CREATE TABLE IF NOT EXISTS posts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT,
-  content TEXT,
-  author TEXT
-)
-`);
-
-db.run(`ALTER TABLE posts ADD COLUMN image TEXT`, (err) => {
-  if (err && !err.message.includes("duplicate column name")) {
-    console.log(err.message);
-  }
-});
-
 /* ---------------- START SERVER ---------------- */
-
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });

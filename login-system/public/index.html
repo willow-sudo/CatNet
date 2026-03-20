@@ -4,19 +4,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./main.css" />
     <script src="./auth.js" defer></script>
-    <title>Login Page</title>
+    <title>Login</title>
   </head>
+
   <body>
+    <!-- NAVBAR -->
+    <div class="navbar">
+      <div class="site-name"><span>Cat</span>Net</div>
+    </div>
+
+    <!-- LOGIN CARD -->
     <div class="card">
-      <h2>Login / Signup</h2>
+      <h2><span id="login">Login</span> / Signup</h2>
 
       <input id="username" placeholder="Username" />
       <input id="password" type="password" placeholder="Password" />
 
-      <button onclick="signup()">Sign Up</button>
       <button onclick="login()">Log In</button>
+      <button id="signup-btn" onclick="signup()">Sign Up</button>
 
       <p id="msg"></p>
     </div>
+
+    <!--FOOTER -->
+    <footer class="footer">
+      <p>&copy; 2026 <span>Cat</span>Net. All rights reserved.</p>
+      <p>Made with :3 by Nullchan</p>
+    </footer>
   </body>
 </html>
